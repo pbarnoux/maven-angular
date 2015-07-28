@@ -39,6 +39,45 @@ The variable `https_proxy` is also supported in the same way. If `http_proxy`
 is the only variable set, npm will be configured to use this proxy for both
 `http` and `https` protocols.
 
+### Maven build with yeoman-maven-plugin
+
+Integrate the
+[yeoman-maven-plugin](https://github.com/trecloux/yeoman-maven-plugin) in your
+project. Configure the plugin to run bower as root:
+
+```xml
+<plugin>
+	<groupId>com.github.trecloux</groupId>
+	<artifactId>yeoman-maven-plugin</artifactId>
+	<version>0.4</version>
+	<executions>
+		<execution>
+			<goals>
+				<goal>build</goal>
+			</goals>
+		</execution>
+	</executions>
+	<configuration>
+		<bowerInstallArgs>install --no-color --allow-root</bowerInstallArgs>
+	</configuration>
+</plugin>
+```
+
+Run the container and mount the maven project in a volume:
+
+```sh
+docker run --rm -it -v .:/usr/src/app pbarnoux/maven-angular
+```
+
+Inside the container:
+
+```sh
+# mvn is an alias to a wrapper bash script
+alias mvn
+# run maven once yo has scaffolded your project
+mvn clean install
+```
+
 ### Avoid downloading the Internet when building with Maven
 
 Start the container and mount a volume pointing to your local $HOME/.m2 folder:
@@ -57,6 +96,3 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-### TODO
-
-- Provide documentation to run yo through the maven plugin.
