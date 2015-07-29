@@ -1,8 +1,5 @@
-# Resources available on web explaining why yo might need additional commands
-# to run
-why_downgrade_bin_build="https://github.com/npm/npm/issues/8682"
-ver_bin_build=2.1.1
-
+# handle docker-compose commands which apparently do not source .bashrc
+declare -f check_bin_build > /dev/null || . /root/functions.sh
 printf "\n***** mvn wrapper *****\n"
 printf "\n* verify which goals are requested\n"
 run_yo=1
@@ -40,7 +37,7 @@ if [ $run_yo -eq 0 ]; then
 	else
 		initial_dir=$PWD
 		cd "$root_dir"
-		# Defined in /root/.bashrc
+		# Defined in /root/functions.sh
 		check_bin_build
 		cd "$initial_dir"
 	fi

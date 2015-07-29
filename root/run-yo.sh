@@ -1,8 +1,5 @@
-# Resources available on web explaining why yo might need additional commands
-# to run
-why_downgrade_bin_build="https://github.com/npm/npm/issues/8682"
-ver_bin_build=2.1.1
-
+# handle docker-compose commands which apparently do not source .bashrc
+declare -f check_bin_build > /dev/null || . /root/functions.sh
 printf "\n***** yo wrapper *****\n"
 
 if [ ! -z "yo_dir" -a -d "$yo_dir" ]; then
@@ -11,7 +8,7 @@ if [ ! -z "yo_dir" -a -d "$yo_dir" ]; then
 else
 	printf "\n* yo_dir variable not set, running in current dir\n"
 fi
-# Defined in /root/.bashrc
+# Defined in /root/functions.sh
 check_bin_build
 printf "\n***** end of wrapper *****\n\n"
 exec "/usr/bin/yo" "$@"
