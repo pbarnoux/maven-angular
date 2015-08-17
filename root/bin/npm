@@ -1,0 +1,59 @@
+#!/bin/bash
+# This script is also started by yeoman-maven-plugin (with Apache Commons Exec)
+# The shebang is mandatory to access bash built-in commands
+
+# First delegate to /usr/bin/npm silently if install was not required
+# That's because yeoman-maven-plugin calls npm --version first
+run_npm_install=1
+run_npm_install_global=1
+
+for goal in "$@"
+do
+    case "$goal" in
+        install )
+        run_npm_install=0 ;;
+        -g )
+        run_npm_install_global=0 ;;
+    *) ;;
+esac
+done
+
+if [ $run_npm_install -ne 0 -o  $run_npm_install_global -eq 0  ]; then
+	exec "/usr/bin/npm" "$@"
+fi
+printf "\n***** npm wrapper *****\n"
+printf "* requested to run npm install (non global)\n"
+fs_type=$(findmnt -n -o FSTYPE -T $PWD)
+
+if [ "$fs_type" == "vboxsf" -a ! -z "$http_proxy" -a ! -d node_modules ]; then
+	printf "* current dir seems to be a shared Windows drive\n"
+	printf "  some dependencies cannot be built on this drive\n"
+	printf "* the http_proxy variable is set\n"
+	printf "  some dependencies will need to be built from sources\n"
+	printf "* the node_modules directory does not exist\n"
+	printf "  these dependencies are not already built\n"
+	printf "* running npm install in /tmp\n"
+	initial_dir=$PWD
+	initial_dir_simple_name=$(basename "$initial_dir")
+	mkdir /tmp/"$initial_dir_simple_name"
+	cp ./* /tmp/"$initial_dir_simple_name"
+	cd /tmp/"$initial_dir_simple_name"
+	# Defined in /root/functions.sh
+	downgrade_bin_build
+	printf "\n***** pausing wrapper *****\n\n"
+else
+	printf "* attempting to run npm install without tweaks\n"
+	printf "\n***** npm wrapper *****\n"
+fi
+/usr/bin/npm "$@"
+
+if [ ! -z "$initial_dir" ]; then
+	printf "\n***** resuming wrapper *****\n"
+	remove_bin_build
+	printf "* copying node_modules in '%s'\n" "$initial_dir"
+	printf "* this can take a while...\n"
+	cp -r node_modules "$initial_dir"/.
+	printf "\n* change directory to '%s'" "$initial_dir"
+	cd "$initial_dir"
+	printf "\n***** end of wrapper *****\n\n"
+fi

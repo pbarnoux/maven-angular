@@ -1,0 +1,8 @@
+printf "\n***** yo wrapper *****\n"
+relocate_to_yo_dir "scaffolding"
+downgrade_bin_build
+printf "\n***** pausing wrapper *****\n\n"
+/usr/bin/yo "$@"
+printf "\n***** resuming wrapper *****\n\n"
+remove_bin_build
+printf "\n***** end of wrapper *****\n\n"
