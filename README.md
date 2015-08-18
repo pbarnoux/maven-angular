@@ -131,30 +131,30 @@ docker run --rm -it pbarnoux/maven-angular
 Inside the container:
 
 ```sh
-# npm is an alias to a wrapper bash script
-alias npm
 # run npm
 npm install
 ```
 
 #### Windows + Vagrant + Docker + Proxy
 
-It will detect if your current directory is a vboxsf filesystem, and if so, it
-will perform the npm install in the /tmp folder instead. Moving back the
-generated dependencies may take some minutes.
-
-The reason behind this is that when a proxy is detected, imagemin dependencies
-must be downloaded as source tarballs, compiled and configured. The
-configuration step is using automake and raises this kind of error on shared
-drives:
+Non incremental builds (node_modules directory does not exist) running on
+vboxsf filesystem behind a proxy seem to fail. The reason behind this is that
+when a proxy is detected, some dependencies such as imagemin must be downloaded
+as source tarballs, compiled and configured. The configuration step is using
+automake and raises this kind of error on shared drives:
 
 ./configure: cannot create temp file for here-document: Text file busy
 
+To avoid this error, the build runs in /tmp when all these conditions are met
+and the generated node_modules directory is copied in the original folder
+(which may take a long time).
+
 #### Note about npm errors reported by the wrapper scripts
 
-When starting yo from the wrapper shell script with an environment variable
-`http_proxy` set, the shell script will attempt to downgrade bin-build to the
-2.1.1 version.
+When running `npm install` behind a proxy, some dependencies such as imagemin
+cannot be downloaded properly. A workaround is to use a downgraded version of
+the bin-build dependency. The wrapper shell scripts for yo and npm residing in
+/root/bin will try to perform the downgrade if needed.
 
 The following npm errors may be reported in the console:
 - `npm ERR! code 1` the first time yo is scaffolding the project;
@@ -164,6 +164,9 @@ The following npm errors may be reported in the console:
 These lines are print by the `npm list` command ran by the script.
 Unfortunately, my limited knowledge about npm did not permit to keep a clean
 log without breaking something in the bash script.
+
+Reference:
+[https://github.com/npm/npm/issues/8682](https://github.com/npm/npm/issues/8682)
 
 ## Running maven to build the project
 
